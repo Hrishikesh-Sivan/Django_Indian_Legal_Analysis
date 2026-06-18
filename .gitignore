@@ -1,0 +1,15 @@
+legal/data
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+instance/
+*.log
+.DS_Store
+.vscode/
+.idea/
+data/raw/
+data/processed/
+cache
+db.sqlite3

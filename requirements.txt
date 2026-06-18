@@ -1,0 +1,37 @@
+# ── Web app ───────────────────────────────────────────────────
+django>=4.2
+gunicorn>=21.2.0
+python-dotenv==1.0.1
+whitenoise>=6.7.0
+
+# ── NLP ──────────────────────────────────────────────────────
+spacy==3.7.5
+# Blackstone legal NLP model (installed from direct wheel — see README)
+# https://blackstone-model.s3-eu-west-1.amazonaws.com/en_blackstone_proto-0.0.1.tar.gz
+# Fallback general English model
+# python -m spacy download en_core_web_sm
+
+# ── Data ingestion ────────────────────────────────────────────
+pandas==2.2.2
+pyarrow==17.0.0
+python-dateutil==2.9.0
+requests==2.32.3
+
+# ── Trend pipeline ────────────────────────────────────────────
+numpy==1.26.4
+
+# ── Semantic BERT layer ───────────────────────────────────────
+# Model (~400 MB) cached in ~/.cache/huggingface/hub on first use.
+transformers>=4.40.0
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.4.0
+torchvision>=0.19.0
+
+# ── Similar Case Retrieval ────────────────────────────────────
+# BM25 keyword retrieval
+rank-bm25>=0.2.2
+
+# ── PostgreSQL vector database ────────────────────────────────
+# Replaces faiss-cpu for semantic retrieval
+psycopg2-binary>=2.9.9
+pgvector>=0.3.0

@@ -1,0 +1,22 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+gunicorn = ">=21.2.0"
+spacy = "==3.7.5"
+pandas = "==2.2.2"
+pyarrow = "==17.0.0"
+python-dateutil = "==2.9.0"
+requests = "==2.32.3"
+numpy = "==1.26.4"
+transformers = ">=4.40.0"
+torch = ">=2.2.0"
+rank-bm25 = ">=0.2.2"
+faiss-cpu = ">=1.7.4"
+
+[dev-packages]
+
+[requires]
+python_version = "3.14"
