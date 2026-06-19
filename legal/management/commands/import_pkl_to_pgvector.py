@@ -112,10 +112,15 @@ class Command(BaseCommand):
             file_skipped  = 0
 
             for _, row in df.iterrows():
-                case_id = str(row["file"]).strip()
-                if not case_id:
+                raw_file = str(row["file"]).strip()
+                if not raw_file:
                     file_skipped += 1
                     continue
+
+                # Strip file extension (.PDF, .pdf, .txt, etc.) to match
+                # the case_id format used in judgments.parquet and the lexical index.
+                from pathlib import Path as _Path
+                case_id = _Path(raw_file).stem  # e.g. "Abdulla_Ahmed_...1950_1" (no .PDF)
 
                 if case_id in existing:
                     file_skipped += 1
