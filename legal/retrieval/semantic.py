@@ -232,14 +232,6 @@ class SemanticRetriever:
             try:
                 from legal.models import CaseEmbedding
                 count = CaseEmbedding.objects.count()
-                if count == 0:
-                    log.warning(
-                        "CaseEmbedding table is empty. "
-                        "Run: python manage.py import_faiss_to_pgvector. "
-                        "Semantic retrieval disabled."
-                    )
-                    self._state = "unavailable"
-                    return
                 log.info("SemanticRetriever ready (%d vectors in pgvector)", count)
             except Exception as exc:
                 log.warning(
@@ -258,7 +250,7 @@ class SemanticRetriever:
     def search(self, query: str, top_k: int = 150) -> list[dict]:
         """Free-text semantic search using pgvector cosine distance.
 
-        Returns list of {case_id, semantic_score, semantic_rank}.
+        Returns list of {case_id, year, clean_text, semantic_score, semantic_rank}.
         Returns [] if pgvector is unavailable.
         """
         if not self.is_available():
@@ -318,15 +310,17 @@ class SemanticRetriever:
             CaseEmbedding.objects
             .annotate(distance=CosineDistance("embedding", qvec_list))
             .order_by("distance")[:top_k]
-            .values("case_id", "distance")
+            .values("case_id", "year", "clean_text", "distance")
         )
 
         results: list[dict] = []
         for rank, row in enumerate(qs, start=1):
-            # cosine distance ∈ [0, 2]; similarity = 1 - distance
+            # cosine distance in [0, 2]; similarity = 1 - distance
             score = float(1.0 - row["distance"])
             results.append({
                 "case_id":        row["case_id"],
+                "year":           row["year"],
+                "clean_text":     row["clean_text"],
                 "semantic_score": score,
                 "semantic_rank":  rank,
             })
