@@ -80,9 +80,9 @@ python manage.py import_faiss_to_pgvector
 python manage.py createsuperuser
 ```
 
-*(Highly Recommended)*: To make semantic search lightning fast, open `psql` and create an IVFFlat index:
+*(Highly Recommended)*: To make semantic search lightning fast, open `psql` and create an HNSW index:
 ```sql
-CREATE INDEX ON legal_caseembedding USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+CREATE INDEX ON legal_caseembedding USING hnsw (embedding vector_cosine_ops);
 ```
 
 ### 5. Run the Application
