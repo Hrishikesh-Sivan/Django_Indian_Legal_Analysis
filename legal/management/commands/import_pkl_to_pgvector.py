@@ -27,6 +27,10 @@ import pickle
 from pathlib import Path
 
 from django.core.management.base import BaseCommand, CommandError
+import sys
+
+# Increase recursion limit for large pickle files
+sys.setrecursionlimit(10000)
 
 log = logging.getLogger(__name__)
 
@@ -80,13 +84,23 @@ class Command(BaseCommand):
         total_skipped  = 0
         total_errors   = 0
 
+        # -- Monkeypatch for old pandas StringDtype pickling --
+        import pandas.core.arrays.string_
+        if not hasattr(pandas.core.arrays.string_.StringDtype, '_patched_for_import'):
+            orig_init = pandas.core.arrays.string_.StringDtype.__init__
+            pandas.core.arrays.string_.StringDtype.__init__ = lambda self, *args, orig=orig_init, **kwargs: orig(self, *(args[:1] if args else []))
+            pandas.core.arrays.string_.StringDtype._patched_for_import = True
+        # -----------------------------------------------------
+
         for pkl_path in pkl_files:
             self.stdout.write(f"[{pkl_path.name}] Loading…")
 
             try:
                 import pandas as pd
-                with open(pkl_path, "rb") as f:
-                    df = pickle.load(f)
+                # Use pd.read_pickle instead of pickle.load to correctly leverage pandas unpickling
+                df = pd.read_pickle(pkl_path)
+
+
             except Exception as exc:
                 self.stdout.write(self.style.ERROR(f"  Failed to load: {exc}"))
                 total_errors += 1
@@ -186,7 +200,7 @@ class Command(BaseCommand):
             f"  Total rows in DB: {CaseEmbedding.objects.count()}"
         ))
         self.stdout.write(
-            "\nTip: rebuild the HNSW index after a full re-import:\n"
-            "  DROP INDEX IF EXISTS legal_caseembedding_embedding_idx;\n"
-            "  CREATE INDEX ON legal_caseembedding USING hnsw (embedding vector_cosine_ops);\n"
+            "\nTip: to rebuild the index (if not managed by Django migrations):\n"
+            "  DROP INDEX IF EXISTS embedding_ivfflat_idx;\n"
+            "  CREATE INDEX embedding_ivfflat_idx ON legal_caseembedding USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);\n"
         )

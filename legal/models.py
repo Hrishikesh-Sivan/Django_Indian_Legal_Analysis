@@ -1,5 +1,5 @@
 from django.db import models
-from pgvector.django import VectorField
+from pgvector.django import VectorField, IvfflatIndex
 
 
 class CaseEmbedding(models.Model):
@@ -20,6 +20,14 @@ class CaseEmbedding(models.Model):
 
     class Meta:
         app_label = "legal"
+        indexes = [
+            IvfflatIndex(
+                name="embedding_ivfflat_idx",
+                fields=["embedding"],
+                lists=100,
+                opclasses=["vector_cosine_ops"]
+            )
+        ]
 
     def __str__(self):
         return f"{self.case_id} ({self.year})"
